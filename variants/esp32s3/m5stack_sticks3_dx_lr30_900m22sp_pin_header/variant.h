@@ -29,7 +29,11 @@
 #define I2C_SCL 48
 
 #define BUTTON_PIN 11
+#define PIN_BUTTON2 12
 #define BUTTON_NEED_PULLUP
+
+#define HAS_BMI270
+#define HAS_M5PM1
 
 #undef GPS_RX_PIN
 #undef GPS_TX_PIN
@@ -48,9 +52,8 @@
 #define LORA_DIO0 -1
 #define LORA_DIO1 1
 
-/* Current Meshtastic SX126x variants commonly pass BUSY through LORA_DIO2. */
 #define LORA_BUSY 2
-#define LORA_DIO2 LORA_BUSY
+#define LORA_DIO2 RADIOLIB_NC
 #define LORA_DIO3 RADIOLIB_NC
 
 #define SX126X_CS LORA_CS

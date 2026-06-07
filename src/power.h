@@ -116,6 +116,8 @@ class Power : public concurrency::OSThread
     bool analogInit();
     /// Setup cw2015 battery level sensor
     bool cw2015Init();
+    /// Setup an M5PM1 power management IC
+    bool m5pm1Init();
     /// Setup a 17048 battery level sensor
     bool max17048Init();
     /// Setup a Lipo charger

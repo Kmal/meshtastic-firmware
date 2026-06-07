@@ -243,6 +243,10 @@ RAK9154Sensor rak9154Sensor;
 XPowersPPM *PPM = NULL;
 #endif
 
+#if !MESHTASTIC_EXCLUDE_I2C && defined(HAS_M5PM1) && __has_include(<M5PM1.h>)
+#include <M5PM1.h>
+#endif
+
 #ifdef HAS_BQ27220
 #include "bq27220.h"
 #endif
@@ -770,6 +774,8 @@ bool Power::setup()
     if (axpChipInit()) {
         found = true;
     } else if (cw2015Init()) {
+        found = true;
+    } else if (m5pm1Init()) {
         found = true;
     } else if (max17048Init()) {
         found = true;
@@ -1474,6 +1480,76 @@ bool Power::axpChipInit()
     return false;
 #endif
 }
+
+#if !MESHTASTIC_EXCLUDE_I2C && defined(HAS_M5PM1) && __has_include(<M5PM1.h>)
+
+class M5PM1BatteryLevel : public HasBatteryLevel
+{
+  private:
+    M5PM1 pm1;
+    bool initialized = false;
+
+  public:
+    bool runOnce()
+    {
+        if (initialized) {
+            return true;
+        }
+
+        m5pm1_err_t err = pm1.begin(&Wire, M5PM1_DEFAULT_ADDR, I2C_SDA, I2C_SCL, M5PM1_I2C_FREQ_100K);
+        if (err != M5PM1_OK) {
+            LOG_WARN("M5PM1 init failed: %d", err);
+            return false;
+        }
+
+        pm1.setChargeEnable(true);
+        pm1.setDcdcEnable(true);
+        pm1.setLdoEnable(true);
+        initialized = true;
+        return true;
+    }
+
+    virtual int getBatteryPercent() override { return -1; }
+    virtual uint16_t getBattVoltage() override
+    {
+        uint16_t mv = 0;
+        if (initialized && pm1.readVbat(&mv) == M5PM1_OK) {
+            return mv;
+        }
+        return 0;
+    }
+    virtual bool isBatteryConnect() override { return getBattVoltage() > 2500; }
+
+    virtual bool isVbusIn() override
+    {
+        uint16_t mv = 0;
+        if (initialized && pm1.readVin(&mv) == M5PM1_OK && mv > 4000) {
+            return true;
+        }
+        return initialized && pm1.read5VInOut(&mv) == M5PM1_OK && mv > 4000;
+    }
+
+    virtual bool isCharging() override { return isBatteryConnect() && isVbusIn(); }
+};
+
+M5PM1BatteryLevel m5pm1Level;
+
+bool Power::m5pm1Init()
+{
+    bool result = m5pm1Level.runOnce();
+    LOG_DEBUG("Power::m5pm1Init PMIC is %s", result ? "ready" : "not ready yet");
+    if (!result)
+        return false;
+    batteryLevel = &m5pm1Level;
+    return true;
+}
+
+#else
+bool Power::m5pm1Init()
+{
+    return false;
+}
+#endif
 
 #if !MESHTASTIC_EXCLUDE_I2C && __has_include(<Adafruit_MAX1704X.h>)
 
