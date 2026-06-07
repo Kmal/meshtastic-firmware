@@ -1,0 +1,66 @@
+#pragma once
+
+#ifndef _M5STACK_STICKS3_DX_LR30_900M22SP_PIN_HEADER_VARIANT_H_
+#define _M5STACK_STICKS3_DX_LR30_900M22SP_PIN_HEADER_VARIANT_H_
+
+#define M5STACK_STICKS3_DX_LR30_900M22SP_PIN_HEADER 1
+
+#define USE_ST7789
+
+#define ST7789_NSS 41
+#define ST7789_RS 45
+#define ST7789_SDA 39
+#define ST7789_SCK 40
+#define ST7789_RESET 21
+#define ST7789_MISO -1
+#define ST7789_BUSY -1
+#define VTFT_LEDA 38
+
+#define TFT_BACKLIGHT_ON HIGH
+#define ST7789_SPI_HOST SPI2_HOST
+
+#define SPI_FREQUENCY 40000000
+#define SPI_READ_FREQUENCY 16000000
+
+#define TFT_WIDTH 240
+#define TFT_HEIGHT 135
+
+#define I2C_SDA 47
+#define I2C_SCL 48
+
+#define BUTTON_PIN 11
+#define BUTTON_NEED_PULLUP
+
+#undef GPS_RX_PIN
+#undef GPS_TX_PIN
+#define HAS_GPS 0
+
+#define USE_SX1262
+
+#define LORA_SCK 6
+#define LORA_MOSI 7
+#define LORA_MISO 8
+#define LORA_CS 5
+
+#define LORA_RESET 4
+#define LORA_RST 4
+
+#define LORA_DIO0 -1
+#define LORA_DIO1 1
+
+/* Current Meshtastic SX126x variants commonly pass BUSY through LORA_DIO2. */
+#define LORA_BUSY 2
+#define LORA_DIO2 LORA_BUSY
+#define LORA_DIO3 RADIOLIB_NC
+
+#define SX126X_CS LORA_CS
+#define SX126X_DIO1 LORA_DIO1
+#define SX126X_BUSY LORA_BUSY
+#define SX126X_RESET LORA_RESET
+
+#define LORA_RXEN 43
+#define LORA_TXEN 44
+#define SX126X_RXEN LORA_RXEN
+#define SX126X_TXEN LORA_TXEN
+
+#endif
