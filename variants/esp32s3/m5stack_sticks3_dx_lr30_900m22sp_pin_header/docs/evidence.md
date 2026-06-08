@@ -23,3 +23,15 @@ FIRMWARE_POWER_POLICY: DO_NOT_ENABLE_STICKS3_EXT_5V_BY_DEFAULT
 Do not shorten this firmware target to `DX-LR30-900M22SP`. This variant is for the
 `DX-LR30-900M22SP Pin Header / 插针款` hardware identity only. The target has no
 STM32; M5Stack StickS3 controls the SX1262 over SPI.
+
+## CI failure 27139716800 root cause
+
+- The failed job was `Compile m5stack-sticks3-dx-lr30-900m22sp-pin-header / build-esp32s3` for run `27139716800`.
+- The regression was introduced when the StickS3 M5PM1 battery/power-status thread was added: `runOnce()` read
+  `M5PM1_PWR_SRC` and `M5PM1_GPIO_IN`, but the variant only declared the GPIO mode/output/drive/function and
+  battery-voltage registers.
+- The missing register constants are part of the same M5PM1 register table already used by the variant. M5PM1 power source is
+  register `0x04`; GPIO input state is register `0x12`; battery voltage starts at `0x22`/`0x23`.
+- This is the same class of issue as the earlier StickS3 workflow/build fixes: variant-local additions referenced build-time
+  symbols that were not included or declared in that variant translation unit, so CI failed before firmware linking or hardware
+  validation could run.

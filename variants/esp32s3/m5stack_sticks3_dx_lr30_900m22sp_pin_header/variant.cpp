@@ -13,9 +13,11 @@
 namespace
 {
 constexpr uint8_t M5PM1_ADDR = 0x6e;
+constexpr uint8_t M5PM1_PWR_SRC = 0x04;
+constexpr uint8_t M5PM1_I2C_CFG = 0x09;
 constexpr uint8_t M5PM1_GPIO_MODE = 0x10;
 constexpr uint8_t M5PM1_GPIO_OUT = 0x11;
-constexpr uint8_t M5PM1_I2C_CFG = 0x09;
+constexpr uint8_t M5PM1_GPIO_IN = 0x12;
 constexpr uint8_t M5PM1_GPIO_DRV = 0x13;
 constexpr uint8_t M5PM1_GPIO_FUNC0 = 0x16;
 constexpr uint8_t M5PM1_BAT_L = 0x22;
