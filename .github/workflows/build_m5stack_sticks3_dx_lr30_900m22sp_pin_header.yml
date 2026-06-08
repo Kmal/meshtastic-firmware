@@ -1,0 +1,34 @@
+name: Build M5Stack StickS3 DX-LR30 Pin Header
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/build_m5stack_sticks3_dx_lr30_900m22sp_pin_header.yml
+      - variants/esp32s3/m5stack_sticks3_dx_lr30_900m22sp_pin_header/**
+  push:
+    paths:
+      - .github/workflows/build_m5stack_sticks3_dx_lr30_900m22sp_pin_header.yml
+      - variants/esp32s3/m5stack_sticks3_dx_lr30_900m22sp_pin_header/**
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  build:
+    name: Compile m5stack-sticks3-dx-lr30-900m22sp-pin-header
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: 3.x
+          cache: pip
+
+      - name: Install PlatformIO
+        run: pip install -U platformio
+
+      - name: Compile firmware
+        run: platformio run -e m5stack-sticks3-dx-lr30-900m22sp-pin-header
