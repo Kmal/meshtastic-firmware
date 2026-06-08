@@ -46,3 +46,14 @@ STM32; M5Stack StickS3 controls the SX1262 over SPI.
   ESP32-S3 build still fails before hardware validation can run.
 - The corrected ownership is: the board variant owns the M5PM1 helper (`initM5PM1PowerStatus()`), while the existing extra-variant `lateInitVariant()`
   remains the single late-init entry point and calls the M5PM1 helper before setting up the buttons.
+
+## CI failure 27145836464 root cause
+
+- The failed job was again `Compile m5stack-sticks3-dx-lr30-900m22sp-pin-header / build-esp32s3` for run `27145836464`.
+- The previous fix moved StickS3 M5PM1 startup into the existing extra-variant late-init hook, but the M5PM1 power-status thread still built its
+  `meshtastic::PowerStatus` from unqualified `OptTrue`/`OptFalse` enum values.
+- `OptionalBool`, `OptTrue`, and `OptFalse` are declared inside the `meshtastic` namespace in `src/PowerStatus.h`; unlike `src/Power.cpp`, the
+  StickS3 variant translation unit does not import `using namespace meshtastic;`.
+- The corrected code keeps the `PowerStatus` type and the `OptionalBool` values in the same explicit namespace (`meshtastic::PowerStatus`,
+  `meshtastic::OptTrue`, `meshtastic::OptFalse`), avoiding a variant-local namespace lookup failure while preserving the M5PM1-backed battery path
+  required by the StickS3 pin map.

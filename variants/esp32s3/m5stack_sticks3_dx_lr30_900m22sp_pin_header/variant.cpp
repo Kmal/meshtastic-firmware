@@ -124,8 +124,9 @@ class M5PM1PowerStatusThread : public concurrency::OSThread
         const bool hasBattery = mv > M5PM1_MIN_BATTERY_MV;
         const bool hasUsb = (pwrSrc & M5PM1_PWR_SRC_MASK) != M5PM1_PWR_SRC_BATTERY;
         const bool isCharging = (gpioIn & M5PM1_GPIO0_CHG_STAT_BIT) == 0;
-        meshtastic::PowerStatus status(hasBattery ? OptTrue : OptFalse, hasUsb ? OptTrue : OptFalse,
-                                       isCharging ? OptTrue : OptFalse, hasBattery ? mv : -1,
+        meshtastic::PowerStatus status(hasBattery ? meshtastic::OptTrue : meshtastic::OptFalse,
+                                       hasUsb ? meshtastic::OptTrue : meshtastic::OptFalse,
+                                       isCharging ? meshtastic::OptTrue : meshtastic::OptFalse, hasBattery ? mv : -1,
                                        hasBattery ? batteryPercent(mv) : 0);
         powerStatus->updateStatus(&status);
         return M5PM1_POWER_UPDATE_MS;
