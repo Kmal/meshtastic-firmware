@@ -22,7 +22,7 @@ bool pm1Read(uint8_t reg, uint8_t &val)
 {
     Wire.beginTransmission(M5PM1_ADDR);
     Wire.write(reg);
-    if (Wire.endTransmission(false) != 0)
+    if (Wire.endTransmission(true) != 0)
         return false;
     if (Wire.requestFrom(M5PM1_ADDR, static_cast<uint8_t>(1)) != 1)
         return false;
