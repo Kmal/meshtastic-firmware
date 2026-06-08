@@ -10,6 +10,14 @@ on:
       - .github/workflows/build_m5stack_sticks3_dx_lr30_900m22sp_pin_header.yml
       - variants/esp32s3/m5stack_sticks3_dx_lr30_900m22sp_pin_header/**
   workflow_dispatch:
+    inputs:
+      environment:
+        description: PlatformIO environment to build
+        required: true
+        default: m5stack-sticks3-dx-lr30-900m22sp-pin-header
+        type: choice
+        options:
+          - m5stack-sticks3-dx-lr30-900m22sp-pin-header
 
 permissions: read-all
 
@@ -31,4 +39,6 @@ jobs:
         run: pip install -U platformio
 
       - name: Compile firmware
-        run: platformio run -e m5stack-sticks3-dx-lr30-900m22sp-pin-header
+        env:
+          PIO_ENV: ${{ github.event.inputs.environment || 'm5stack-sticks3-dx-lr30-900m22sp-pin-header' }}
+        run: platformio run -e "$PIO_ENV"
