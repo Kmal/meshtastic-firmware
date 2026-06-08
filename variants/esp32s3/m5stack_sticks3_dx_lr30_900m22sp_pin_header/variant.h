@@ -28,9 +28,8 @@
 #define I2C_SDA 47
 #define I2C_SCL 48
 
-#define BUTTON_PIN 11
-#define PIN_BUTTON2 12
-#define BUTTON_NEED_PULLUP
+#define STICKS3_SELECT_BUTTON_PIN 11
+#define STICKS3_DOWN_BUTTON_PIN 12
 
 #define HAS_BMI270
 

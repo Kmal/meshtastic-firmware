@@ -1,5 +1,7 @@
 #include "variant.h"
 
+#include "input/ButtonThread.h"
+
 #include <Preferences.h>
 #include <Wire.h>
 
@@ -18,6 +20,12 @@ constexpr uint8_t M5PM1_GPIO_DRV = 0x13;
 constexpr uint8_t M5PM1_GPIO_FUNC0 = 0x16;
 constexpr uint8_t M5PM1_PYG2_L3B_EN_BIT = 1 << 2;
 constexpr uint8_t M5PM1_PYG2_L3B_EN_FUNC_MASK = 0b11 << 4;
+constexpr uint16_t STICKS3_DOWN_DOUBLE_PRESS_MS = 250;
+constexpr uint16_t STICKS3_DOWN_LONG_PRESS_MS = 600;
+constexpr int STICKS3_BUTTON_DEBOUNCE_MS = 8;
+
+ButtonThread *selectButtonThread = nullptr;
+ButtonThread *downButtonThread = nullptr;
 
 bool pm1Read(uint8_t reg, uint8_t &val)
 {
@@ -58,6 +66,25 @@ void enableInternalPeripheralPower()
     pm1Update(M5PM1_GPIO_DRV, M5PM1_PYG2_L3B_EN_BIT, 0);
     pm1Update(M5PM1_GPIO_OUT, 0, M5PM1_PYG2_L3B_EN_BIT);
 }
+
+void wakeInputBrokerFromISR(ButtonThread *buttonThread)
+{
+    buttonThread->userButton.tick();
+    buttonThread->setIntervalFromNow(0);
+    runASAP = true;
+    BaseType_t higherWake = 0;
+    concurrency::mainDelay.interruptFromISR(&higherWake);
+}
+
+void IRAM_ATTR selectButtonInterrupt()
+{
+    wakeInputBrokerFromISR(selectButtonThread);
+}
+
+void IRAM_ATTR downButtonInterrupt()
+{
+    wakeInputBrokerFromISR(downButtonThread);
+}
 } // namespace
 
 void earlyInitVariant()
@@ -69,5 +96,35 @@ void earlyInitVariant()
     if (!preferences.isKey("firmwareVersion"))
         preferences.putString("firmwareVersion", MESH_OPTSTR(APP_VERSION));
     preferences.end();
+}
+
+void lateInitVariant()
+{
+    if (!inputBroker)
+        return;
+
+    selectButtonThread = new ButtonThread("StickS3SelectButton");
+    ButtonConfig selectConfig;
+    selectConfig.pinNumber = STICKS3_SELECT_BUTTON_PIN;
+    selectConfig.activeLow = true;
+    selectConfig.activePullup = true;
+    selectConfig.intRoutine = selectButtonInterrupt;
+    selectConfig.singlePress = INPUT_BROKER_SELECT;
+    selectButtonThread->initButton(selectConfig);
+    selectButtonThread->userButton.setDebounceMs(STICKS3_BUTTON_DEBOUNCE_MS);
+
+    downButtonThread = new ButtonThread("StickS3DownButton");
+    ButtonConfig downConfig;
+    downConfig.pinNumber = STICKS3_DOWN_BUTTON_PIN;
+    downConfig.activeLow = true;
+    downConfig.activePullup = true;
+    downConfig.intRoutine = downButtonInterrupt;
+    downConfig.singlePress = INPUT_BROKER_USER_PRESS;
+    downConfig.doublePress = INPUT_BROKER_ALT_PRESS;
+    downConfig.longPress = INPUT_BROKER_BACK;
+    downConfig.longPressTime = STICKS3_DOWN_LONG_PRESS_MS;
+    downButtonThread->initButton(downConfig);
+    downButtonThread->userButton.setClickMs(STICKS3_DOWN_DOUBLE_PRESS_MS);
+    downButtonThread->userButton.setDebounceMs(STICKS3_BUTTON_DEBOUNCE_MS);
 }
 #endif
