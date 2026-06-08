@@ -33,7 +33,6 @@
 #define BUTTON_NEED_PULLUP
 
 #define HAS_BMI270
-#define HAS_M5PM1
 
 #undef GPS_RX_PIN
 #undef GPS_TX_PIN
