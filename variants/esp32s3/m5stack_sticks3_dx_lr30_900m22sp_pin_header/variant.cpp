@@ -145,7 +145,7 @@ void earlyInitVariant()
     preferences.end();
 }
 
-void lateInitVariant()
+void initM5PM1PowerStatus()
 {
     new M5PM1PowerStatusThread();
 }

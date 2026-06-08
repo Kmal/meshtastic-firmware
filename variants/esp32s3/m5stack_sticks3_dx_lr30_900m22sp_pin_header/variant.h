@@ -64,4 +64,6 @@
 #define SX126X_RXEN LORA_RXEN
 #define SX126X_TXEN LORA_TXEN
 
+void initM5PM1PowerStatus();
+
 #endif

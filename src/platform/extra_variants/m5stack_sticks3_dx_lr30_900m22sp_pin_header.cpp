@@ -35,6 +35,8 @@ void IRAM_ATTR downButtonInterrupt()
 
 void lateInitVariant()
 {
+    initM5PM1PowerStatus();
+
     if (!inputBroker)
         return;
 
