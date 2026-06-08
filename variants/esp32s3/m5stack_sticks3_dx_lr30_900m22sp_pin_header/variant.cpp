@@ -13,10 +13,11 @@ namespace
 constexpr uint8_t M5PM1_ADDR = 0x6e;
 constexpr uint8_t M5PM1_GPIO_MODE = 0x10;
 constexpr uint8_t M5PM1_GPIO_OUT = 0x11;
+constexpr uint8_t M5PM1_I2C_CFG = 0x09;
 constexpr uint8_t M5PM1_GPIO_DRV = 0x13;
 constexpr uint8_t M5PM1_GPIO_FUNC0 = 0x16;
-constexpr uint8_t M5PM1_PYG2_BIT = 1 << 2;
-constexpr uint8_t M5PM1_PYG2_FUNC_MASK = 0b11 << 4;
+constexpr uint8_t M5PM1_PYG2_L3B_EN_BIT = 1 << 2;
+constexpr uint8_t M5PM1_PYG2_L3B_EN_FUNC_MASK = 0b11 << 4;
 
 bool pm1Read(uint8_t reg, uint8_t &val)
 {
@@ -51,10 +52,11 @@ bool pm1Update(uint8_t reg, uint8_t clearMask, uint8_t setMask)
 void enableInternalPeripheralPower()
 {
     Wire.begin(I2C_SDA, I2C_SCL);
-    pm1Update(M5PM1_GPIO_FUNC0, M5PM1_PYG2_FUNC_MASK, 0);
-    pm1Update(M5PM1_GPIO_MODE, 0, M5PM1_PYG2_BIT);
-    pm1Update(M5PM1_GPIO_DRV, M5PM1_PYG2_BIT, 0);
-    pm1Update(M5PM1_GPIO_OUT, M5PM1_PYG2_BIT, 0);
+    pm1Write(M5PM1_I2C_CFG, 0);
+    pm1Update(M5PM1_GPIO_FUNC0, M5PM1_PYG2_L3B_EN_FUNC_MASK, 0);
+    pm1Update(M5PM1_GPIO_MODE, 0, M5PM1_PYG2_L3B_EN_BIT);
+    pm1Update(M5PM1_GPIO_DRV, M5PM1_PYG2_L3B_EN_BIT, 0);
+    pm1Update(M5PM1_GPIO_OUT, 0, M5PM1_PYG2_L3B_EN_BIT);
 }
 } // namespace
 
