@@ -14,9 +14,11 @@ Expected from variant:
 - VTFT_LEDA=GPIO38
 - TFT_WIDTH=240
 - TFT_HEIGHT=135
+- M5PM1 I2C_CFG register 0x09 is cleared during early init
+- M5PM1 PYG2_L3B_EN is set to GPIO output push-pull high during early init
 
 Observed:
-- Backlight turns on: NOT_RUN_OPERATOR_FORBID_TESTS
+- Backlight turns on: NOT_RUN_NEEDS_OPERATOR_RETEST_AFTER_PM1_GPIO2_HIGH_FIX
 - Meshtastic splash/log/status appears: NOT_RUN_OPERATOR_FORBID_TESTS
 - Text readable: NOT_RUN_OPERATOR_FORBID_TESTS
 - Text mirrored: NOT_RUN_OPERATOR_FORBID_TESTS
@@ -26,4 +28,4 @@ Observed:
 
 Decision:
 - DISPLAY_VALIDATED: NO
-- DISPLAY_CHANGE_REQUIRED: UNKNOWN_UNTIL_HIL
+- DISPLAY_CHANGE_REQUIRED: RETEST_AFTER_PM1_GPIO2_HIGH_FIX
