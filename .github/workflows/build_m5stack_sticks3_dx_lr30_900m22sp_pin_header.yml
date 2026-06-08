@@ -4,31 +4,36 @@ on:
   pull_request:
     paths:
       - .github/workflows/build_m5stack_sticks3_dx_lr30_900m22sp_pin_header.yml
+      - boards/m5stack-sticks3.json
       - variants/esp32s3/m5stack_sticks3_dx_lr30_900m22sp_pin_header/**
   push:
     paths:
       - .github/workflows/build_m5stack_sticks3_dx_lr30_900m22sp_pin_header.yml
+      - boards/m5stack-sticks3.json
       - variants/esp32s3/m5stack_sticks3_dx_lr30_900m22sp_pin_header/**
   workflow_dispatch:
 
 permissions: read-all
 
 jobs:
-  build:
-    name: Compile m5stack-sticks3-dx-lr30-900m22sp-pin-header
-    runs-on: ubuntu-latest
+  version:
+    runs-on: ubuntu-24.04
+    outputs:
+      long: ${{ steps.version.outputs.long }}
     steps:
       - uses: actions/checkout@v6
-        with:
-          submodules: recursive
 
-      - uses: actions/setup-python@v6
-        with:
-          python-version: 3.x
-          cache: pip
+      - name: Get release version string
+        id: version
+        env:
+          BUILD_LOCATION: local
+        run: echo "long=$(./bin/buildinfo.py long)" >> "$GITHUB_OUTPUT"
 
-      - name: Install PlatformIO
-        run: pip install -U platformio
-
-      - name: Compile firmware
-        run: platformio run -e m5stack-sticks3-dx-lr30-900m22sp-pin-header
+  build:
+    name: Compile m5stack-sticks3-dx-lr30-900m22sp-pin-header
+    needs: version
+    uses: ./.github/workflows/build_firmware.yml
+    with:
+      version: ${{ needs.version.outputs.long }}
+      platform: esp32s3
+      pio_env: m5stack-sticks3-dx-lr30-900m22sp-pin-header
