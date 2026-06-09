@@ -66,41 +66,6 @@ uint32_t pow_of_10(uint32_t n)
     return ret;
 }
 
-const char *criticalErrorLabel(meshtastic_CriticalErrorCode code)
-{
-    switch (code) {
-    case meshtastic_CriticalErrorCode_TX_WATCHDOG:
-        return "TX watchdog";
-    case meshtastic_CriticalErrorCode_SLEEP_ENTER_WAIT:
-        return "Sleep enter wait";
-    case meshtastic_CriticalErrorCode_NO_RADIO:
-        return "No LoRa radio";
-    case meshtastic_CriticalErrorCode_UBLOX_UNIT_FAILED:
-        return "GPS unit failed";
-    case meshtastic_CriticalErrorCode_NO_AXP192:
-        return "PMU not found";
-    case meshtastic_CriticalErrorCode_INVALID_RADIO_SETTING:
-        return "Invalid radio setting";
-    case meshtastic_CriticalErrorCode_TRANSMIT_FAILED:
-        return "Transmit failed";
-    case meshtastic_CriticalErrorCode_BROWNOUT:
-        return "Brownout";
-    case meshtastic_CriticalErrorCode_SX1262_FAILURE:
-        return "SX1262 failure";
-    case meshtastic_CriticalErrorCode_RADIO_SPI_BUG:
-        return "Radio SPI fault";
-    case meshtastic_CriticalErrorCode_FLASH_CORRUPTION_RECOVERABLE:
-        return "Flash recovered";
-    case meshtastic_CriticalErrorCode_FLASH_CORRUPTION_UNRECOVERABLE:
-        return "Flash corrupt";
-    case meshtastic_CriticalErrorCode_UNSPECIFIED:
-        return "Unspecified fault";
-    case meshtastic_CriticalErrorCode_NONE:
-    default:
-        return "Unknown fault";
-    }
-}
-
 char graphics::NotificationRenderer::alertBannerLines[MAX_LINES + 1][64] = {};
 uint8_t graphics::NotificationRenderer::alertBannerLineCount = 0;
 graphics::NotificationRenderer::BannerFont graphics::NotificationRenderer::alertBannerLineFonts[MAX_LINES + 1] = {};
@@ -932,8 +897,11 @@ void NotificationRenderer::drawCriticalFaultFrame(OLEDDisplay *display, OLEDDisp
     display->drawString(0 + x, 0 + y, tempBuf);
     display->setTextAlignment(TEXT_ALIGN_LEFT);
     display->setFont(FONT_SMALL);
-    display->drawString(0 + x, FONT_HEIGHT_MEDIUM + y, criticalErrorLabel(error_code));
-    display->drawString(0 + x, FONT_HEIGHT_MEDIUM + FONT_HEIGHT_SMALL + y, "For help, please visit \nmeshtastic.org");
+#ifdef MESHTASTIC_CRITICAL_FAULT_MESSAGE
+    display->drawString(0 + x, FONT_HEIGHT_MEDIUM + y, MESHTASTIC_CRITICAL_FAULT_MESSAGE);
+#else
+    display->drawString(0 + x, FONT_HEIGHT_MEDIUM + y, "For help, please visit \nmeshtastic.org");
+#endif
 }
 
 void NotificationRenderer::drawFrameFirmware(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y)

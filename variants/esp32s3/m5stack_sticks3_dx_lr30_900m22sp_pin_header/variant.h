@@ -34,6 +34,8 @@
 #define HAS_BMI270
 #define HAS_CUSTOM_POWER_STATUS
 
+#define MESHTASTIC_CRITICAL_FAULT_MESSAGE "No LoRa radio\nFor help, please visit \nmeshtastic.org"
+
 #undef GPS_RX_PIN
 #undef GPS_TX_PIN
 #define HAS_GPS 0
