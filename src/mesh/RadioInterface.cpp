@@ -22,6 +22,7 @@
 #include <assert.h>
 #include <pb_decode.h>
 #include <pb_encode.h>
+#include <stdarg.h>
 #include <string.h>
 
 #ifdef ARCH_PORTDUINO
@@ -33,6 +34,43 @@
 #ifdef ARCH_STM32WL
 #include "STM32WLE5JCInterface.h"
 #endif
+
+namespace
+{
+char radioInitFailureMessage[96] = "";
+
+bool lora24SupportedByBuild()
+{
+#if defined(USE_SX1280) || defined(USE_LR1110) || defined(USE_LR1120) || defined(USE_LR1121) || defined(USE_LR2021)
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool isUnsupportedLora24Region(meshtastic_Config_LoRaConfig_RegionCode region)
+{
+    return region == meshtastic_Config_LoRaConfig_RegionCode_LORA_24 && !lora24SupportedByBuild();
+}
+} // namespace
+
+const char *getRadioInitFailureMessage()
+{
+    return radioInitFailureMessage;
+}
+
+void setRadioInitFailureMessage(const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(radioInitFailureMessage, sizeof(radioInitFailureMessage), fmt, args);
+    va_end(args);
+}
+
+void clearRadioInitFailureMessage()
+{
+    radioInitFailureMessage[0] = '\0';
+}
 
 static const meshtastic_Config_LoRaConfig_ModemPreset PRESETS_STD[] = {
     PRESET(LONG_FAST),  PRESET(LONG_SLOW),     PRESET(MEDIUM_SLOW), PRESET(MEDIUM_FAST), PRESET(SHORT_SLOW),
@@ -313,6 +351,7 @@ extern SPIClass SPI1;
 
 std::unique_ptr<RadioInterface> initLoRa()
 {
+    clearRadioInitFailureMessage();
     std::unique_ptr<RadioInterface> rIf = nullptr;
 
 #if ARCH_PORTDUINO
@@ -381,6 +420,13 @@ std::unique_ptr<RadioInterface> initLoRa()
     RadioLibHAL = loraHal;
 #endif
 
+#if defined(RF95_IRQ) || defined(USE_SX1262) || defined(USE_SX1268) || defined(USE_LLCC68)
+    if (config.lora.region == meshtastic_Config_LoRaConfig_RegionCode_LORA_24) {
+        LOG_WARN("Skipping sub-GHz radio probes because region is LORA_24");
+        setRadioInitFailureMessage("LORA_24 skips sub-GHz radio");
+    }
+#endif
+
 // radio init MUST BE AFTER service.init, so we have our radio config settings (from nodedb init)
 #if defined(USE_STM32WLx)
     if (!rIf) {
@@ -418,6 +464,8 @@ std::unique_ptr<RadioInterface> initLoRa()
 #endif
         if (!sxIf->init()) {
             LOG_WARN("No SX1262 radio");
+            if (!getRadioInitFailureMessage()[0])
+                setRadioInitFailureMessage("SX1262 probe failed");
             rIf = nullptr;
         } else {
             LOG_INFO("SX1262 init success");
@@ -581,6 +629,8 @@ std::unique_ptr<RadioInterface> initLoRa()
             rebootAtMsec = millis() + 5000;
         }
     }
+    if (!rIf && !getRadioInitFailureMessage()[0])
+        setRadioInitFailureMessage("No radio probe succeeded");
     return rIf;
 }
 
@@ -879,6 +929,15 @@ bool RadioInterface::validateConfigRegion(const meshtastic_Config_LoRaConfig &lo
 {
     const RegionInfo *newRegion = getRegion(loraConfig.region);
 
+    if (isUnsupportedLora24Region(loraConfig.region)) {
+        char err_string[160];
+        snprintf(err_string, sizeof(err_string), "Region LORA_24 requires a 2.4GHz-capable radio");
+        LOG_ERROR("%s", err_string);
+        RECORD_CRITICALERROR(meshtastic_CriticalErrorCode_INVALID_RADIO_SETTING);
+        sendErrorNotification(err_string);
+        return false;
+    }
+
     // Reject unrecognized region codes (getRegion returns UNSET sentinel for unknown codes)
     if (newRegion->code != loraConfig.region) {
         char err_string[160];
@@ -913,6 +972,20 @@ bool RadioInterface::checkOrClampConfigLora(meshtastic_Config_LoRaConfig &loraCo
     float check_bw;
 
     const RegionInfo *newRegion = getRegion(loraConfig.region);
+
+    if (isUnsupportedLora24Region(loraConfig.region)) {
+        snprintf(err_string, sizeof(err_string), "Region LORA_24 needs 2.4GHz radio, using UNSET");
+        if (!clamp) {
+            LOG_ERROR("%s", err_string);
+            RECORD_CRITICALERROR(meshtastic_CriticalErrorCode_INVALID_RADIO_SETTING);
+            sendErrorNotification(err_string);
+            return false;
+        }
+        LOG_WARN("%s", err_string);
+        sendErrorNotification(err_string);
+        loraConfig.region = meshtastic_Config_LoRaConfig_RegionCode_UNSET;
+        newRegion = getRegion(loraConfig.region);
+    }
 
     const char *presetName = DisplayFormatters::getModemPresetDisplayName(loraConfig.modem_preset, false, loraConfig.use_preset);
 

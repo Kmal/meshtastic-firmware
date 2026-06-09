@@ -101,6 +101,8 @@ template <typename T> bool SX126xInterface<T>::init()
 #endif
     // \todo Display actual typename of the adapter, not just `SX126x`
     LOG_INFO("SX126x init result %d", res);
+    if (res != RADIOLIB_ERR_NONE)
+        setRadioInitFailureMessage("SX126x init result %d", res);
     if (res == RADIOLIB_ERR_CHIP_NOT_FOUND || res == RADIOLIB_ERR_SPI_CMD_FAILED)
         return false;
 
