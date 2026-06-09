@@ -141,7 +141,6 @@ void IRAM_ATTR downButtonInterrupt()
 
 void initM5PM1PowerStatus()
 {
-    Wire.begin(I2C_SDA, I2C_SCL);
     new M5PM1PowerStatusThread();
 }
 
