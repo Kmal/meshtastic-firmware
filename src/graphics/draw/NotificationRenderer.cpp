@@ -897,7 +897,14 @@ void NotificationRenderer::drawCriticalFaultFrame(OLEDDisplay *display, OLEDDisp
     display->drawString(0 + x, 0 + y, tempBuf);
     display->setTextAlignment(TEXT_ALIGN_LEFT);
     display->setFont(FONT_SMALL);
+#ifdef MESHTASTIC_CRITICAL_FAULT_LABEL
+    display->drawString(0 + x, FONT_HEIGHT_MEDIUM + y, MESHTASTIC_CRITICAL_FAULT_LABEL);
+    display->drawString(0 + x, FONT_HEIGHT_MEDIUM + FONT_HEIGHT_SMALL + y, "For help, please visit \nmeshtastic.org");
+#elif defined(MESHTASTIC_CRITICAL_FAULT_MESSAGE)
+    display->drawString(0 + x, FONT_HEIGHT_MEDIUM + y, MESHTASTIC_CRITICAL_FAULT_MESSAGE);
+#else
     display->drawString(0 + x, FONT_HEIGHT_MEDIUM + y, "For help, please visit \nmeshtastic.org");
+#endif
 }
 
 void NotificationRenderer::drawFrameFirmware(OLEDDisplay *display, OLEDDisplayUiState *state, int16_t x, int16_t y)
