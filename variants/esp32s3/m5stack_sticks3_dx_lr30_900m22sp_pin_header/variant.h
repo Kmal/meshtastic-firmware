@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+const char *getRadioInitFailureMessage();
+
 #define USE_ST7789
 
 #define ST7789_NSS 41
@@ -44,7 +46,7 @@ static inline const char *criticalErrorLabel(uint32_t code)
     case 2:
         return "Sleep enter wait";
     case 3:
-        return "No LoRa radio";
+        return getRadioInitFailureMessage()[0] ? getRadioInitFailureMessage() : "No LoRa radio";
     case 4:
         return "Unspecified fault";
     case 5:

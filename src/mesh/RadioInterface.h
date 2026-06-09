@@ -310,6 +310,9 @@ class RadioInterface
 };
 
 std::unique_ptr<RadioInterface> initLoRa();
+const char *getRadioInitFailureMessage();
+void setRadioInitFailureMessage(const char *fmt, ...);
+void clearRadioInitFailureMessage();
 
 /// Debug printing for packets
 void printPacket(const char *prefix, const meshtastic_MeshPacket *p);
