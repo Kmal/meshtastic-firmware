@@ -57,3 +57,15 @@ STM32; M5Stack StickS3 controls the SX1262 over SPI.
 - The corrected code keeps the `PowerStatus` type and the `OptionalBool` values in the same explicit namespace (`meshtastic::PowerStatus`,
   `meshtastic::OptTrue`, `meshtastic::OptFalse`), avoiding a variant-local namespace lookup failure while preserving the M5PM1-backed battery path
   required by the StickS3 pin map.
+
+## CI failure 27152132450 root cause
+
+- The failed job was again `Compile m5stack-sticks3-dx-lr30-900m22sp-pin-header / build-esp32s3` for run `27152132450`.
+- The StickS3 M5PM1 power-status implementation lived in the board variant translation unit and included `PowerStatus.h`.
+  That header pulls in `configuration.h` and generated protobuf headers, but this variant source is compiled before PlatformIO's
+  library dependency finder has selected the Nanopb include path for that translation unit.
+- The build therefore failed while compiling `variants/esp32s3/m5stack_sticks3_dx_lr30_900m22sp_pin_header/variant.cpp` with
+  `src/mesh/generated/meshtastic/mesh.pb.h:6:10: fatal error: pb.h: No such file or directory`.
+- The corrected ownership is: `variant.cpp` remains limited to early StickS3 M5PM1 rail setup and NVS compatibility setup, while
+  `src/platform/extra_variants/m5stack_sticks3_dx_lr30_900m22sp_pin_header.cpp` owns the late M5PM1 `PowerStatus` thread where
+  normal firmware source dependencies are available.

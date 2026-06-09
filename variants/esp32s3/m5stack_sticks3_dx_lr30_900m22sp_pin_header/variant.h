@@ -32,6 +32,7 @@
 #define STICKS3_DOWN_BUTTON_PIN 12
 
 #define HAS_BMI270
+#define HAS_CUSTOM_POWER_STATUS
 
 #undef GPS_RX_PIN
 #undef GPS_TX_PIN
