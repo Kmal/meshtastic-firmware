@@ -5,6 +5,8 @@
 
 #define M5STACK_STICKS3_DX_LR30_900M22SP_PIN_HEADER 1
 
+#include <stdint.h>
+
 #define USE_ST7789
 
 #define ST7789_NSS 41
@@ -34,7 +36,42 @@
 #define HAS_BMI270
 #define HAS_CUSTOM_POWER_STATUS
 
-#define MESHTASTIC_CRITICAL_FAULT_MESSAGE "No LoRa radio\nFor help, please visit \nmeshtastic.org"
+static inline const char *criticalErrorLabel(uint32_t code)
+{
+    switch (code) {
+    case 1:
+        return "TX watchdog";
+    case 2:
+        return "Sleep enter wait";
+    case 3:
+        return "No LoRa radio";
+    case 4:
+        return "Unspecified fault";
+    case 5:
+        return "GPS unit failed";
+    case 6:
+        return "PMU not found";
+    case 7:
+        return "Invalid radio setting";
+    case 8:
+        return "Transmit failed";
+    case 9:
+        return "Brownout";
+    case 10:
+        return "SX1262 failure";
+    case 11:
+        return "Radio SPI fault";
+    case 12:
+        return "Flash recovered";
+    case 13:
+        return "Flash corrupt";
+    case 0:
+    default:
+        return "Unknown fault";
+    }
+}
+
+#define MESHTASTIC_CRITICAL_FAULT_MESSAGE criticalErrorLabel(error_code)
 
 #undef GPS_RX_PIN
 #undef GPS_TX_PIN
