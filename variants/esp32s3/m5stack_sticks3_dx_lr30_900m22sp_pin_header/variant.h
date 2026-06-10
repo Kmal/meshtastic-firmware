@@ -84,6 +84,7 @@ static inline const char *criticalErrorLabel(uint32_t code)
 #define HAS_GPS 0
 
 #define USE_SX1262
+#define SX126X_MAX_POWER 22
 
 #define LORA_SCK 6
 #define LORA_MOSI 7

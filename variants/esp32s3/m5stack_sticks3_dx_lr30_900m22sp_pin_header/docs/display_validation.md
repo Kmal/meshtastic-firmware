@@ -14,6 +14,7 @@ Expected from variant:
 - VTFT_LEDA=GPIO38
 - TFT_WIDTH=240
 - TFT_HEIGHT=135
+- M5PM1 PWR_CFG register 0x06 bit 2 LDO_EN is set during early init for Hat2 3V3_L2
 - M5PM1 I2C_CFG register 0x09 is cleared during early init
 - M5PM1 PYG2_L3B_EN is set to GPIO output push-pull high during early init
 

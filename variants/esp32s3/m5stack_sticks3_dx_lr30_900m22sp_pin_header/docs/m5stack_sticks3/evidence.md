@@ -41,12 +41,42 @@
 | IR | TX=GPIO46, RX=GPIO42 |
 | Audio pins | GPIO18, GPIO14, GPIO17, GPIO15, GPIO16, GPIO48, GPIO47 |
 | HAT2 available GPIO pins | GPIO5, GPIO4, GPIO6, GPIO1, GPIO7, GPIO8, GPIO43, GPIO44, GPIO2, GPIO3 |
-| EXT_5V policy | Default input mode; do not enable output until verified safe for this radio carrier |
+| HAT2 excluded pins for radio wiring | Boot, EXT_5V, BAT, 5V_IN |
+| HAT2 radio power rail | 3V3_L2 on Hat2 pin 13 |
+| M5PM1 3V3_L2 control | PWR_CFG register 0x06 bit 2 LDO_EN enables the 3.3 V LDO / 3V3_L2 rail |
+| EXT_5V policy | Default input mode; do not enable output for this radio carrier |
 | M5PM1 L3B control | PYG2_L3B_EN powers LCD backlight, MIC, and speaker rail |
 | M5PM1 charge status | PYG0_CHG_STAT reports charging state |
 | M5PM1 PYG2 distinct from ESP32 GPIO2 | Yes |
 | M5GFX L3B boot value | M5PM1 PYG2 output HIGH |
 | M5GFX I2C idle-sleep boot value | PM1 I2C_CFG=0x00 |
+
+## StickS3 Hat2 bus facts used by the DX-LR30 wiring
+
+| Hat2 pin | StickS3 signal | DX-LR30 use |
+| ---: | --- | --- |
+| 1 | GND | DX GND |
+| 2 | GPIO5 | DX NSS |
+| 3 | EXT_5V | Not used |
+| 4 | GPIO4 | DX NRST |
+| 5 | Boot | Not used |
+| 6 | GPIO6 | DX SCK |
+| 7 | GPIO1 | DX DIO1 |
+| 8 | GPIO7 | DX MOSI |
+| 9 | GPIO8 | DX MISO |
+| 10 | GPIO43 | DX RXEN |
+| 11 | BAT | Not used |
+| 12 | GPIO44 | DX TXEN |
+| 13 | 3V3_L2 | DX VCC |
+| 14 | GPIO2 | DX BUSY |
+| 15 | 5V_IN | Not used |
+| 16 | GPIO3 | Spare, not used |
+
+The StickS3 documentation says `EXT_5V` defaults to input mode and can be
+configured as 5 V output. This variant must keep `EXT_5V` unused for the
+DX-LR30 because the SZDX radio VCC range is 1.8-3.7 V. Early variant init
+therefore enables M5PM1 `LDO_EN` for `3V3_L2` without enabling the 5 V DCDC or
+BOOST output bits.
 
 ## Battery implementation notes
 
