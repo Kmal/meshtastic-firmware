@@ -7,11 +7,13 @@
 namespace
 {
 constexpr uint8_t M5PM1_ADDR = 0x6e;
+constexpr uint8_t M5PM1_PWR_CFG = 0x06;
 constexpr uint8_t M5PM1_I2C_CFG = 0x09;
 constexpr uint8_t M5PM1_GPIO_MODE = 0x10;
 constexpr uint8_t M5PM1_GPIO_OUT = 0x11;
 constexpr uint8_t M5PM1_GPIO_DRV = 0x13;
 constexpr uint8_t M5PM1_GPIO_FUNC0 = 0x16;
+constexpr uint8_t M5PM1_PWR_CFG_DCDC3V3_EN_BIT = 1 << 1;
 constexpr uint8_t M5PM1_PYG2_L3B_EN_BIT = 1 << 2;
 constexpr uint8_t M5PM1_PYG2_L3B_EN_FUNC_MASK = 0b11 << 4;
 constexpr uint8_t M5PM1_SETUP_ATTEMPTS = 3;
@@ -49,15 +51,16 @@ bool pm1Update(uint8_t reg, uint8_t clearMask, uint8_t setMask)
     return false;
 }
 
-bool configureInternalPeripheralPower()
+bool configureVariantPowerRails()
 {
-    return pm1Write(M5PM1_I2C_CFG, 0) && pm1Update(M5PM1_GPIO_FUNC0, M5PM1_PYG2_L3B_EN_FUNC_MASK, 0) &&
+    return pm1Update(M5PM1_PWR_CFG, 0, M5PM1_PWR_CFG_DCDC3V3_EN_BIT) && pm1Write(M5PM1_I2C_CFG, 0) &&
+           pm1Update(M5PM1_GPIO_FUNC0, M5PM1_PYG2_L3B_EN_FUNC_MASK, 0) &&
            pm1Update(M5PM1_GPIO_MODE, 0, M5PM1_PYG2_L3B_EN_BIT) &&
            pm1Update(M5PM1_GPIO_DRV, M5PM1_PYG2_L3B_EN_BIT, 0) &&
            pm1Update(M5PM1_GPIO_OUT, 0, M5PM1_PYG2_L3B_EN_BIT);
 }
 
-void enableInternalPeripheralPower()
+void enableVariantPowerRails()
 {
     Wire.end();
     delay(M5PM1_I2C_RETRY_MS);
@@ -65,7 +68,7 @@ void enableInternalPeripheralPower()
     for (uint8_t attempt = 0; attempt < M5PM1_SETUP_ATTEMPTS; attempt++) {
         Wire.begin(I2C_SDA, I2C_SCL);
         delay(M5PM1_I2C_SETTLE_MS);
-        if (configureInternalPeripheralPower()) {
+        if (configureVariantPowerRails()) {
             delay(M5PM1_RAIL_SETTLE_MS);
             Wire.end();
             return;
@@ -79,7 +82,7 @@ void enableInternalPeripheralPower()
 
 void earlyInitVariant()
 {
-    enableInternalPeripheralPower();
+    enableVariantPowerRails();
 }
 
 #endif
