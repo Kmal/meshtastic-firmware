@@ -66,6 +66,20 @@ STM32; M5Stack StickS3 controls the SX1262 over SPI.
   library dependency finder has selected the Nanopb include path for that translation unit.
 - The build therefore failed while compiling `variants/esp32s3/m5stack_sticks3_dx_lr30_900m22sp_pin_header/variant.cpp` with
   `src/mesh/generated/meshtastic/mesh.pb.h:6:10: fatal error: pb.h: No such file or directory`.
-- The corrected ownership is: `variant.cpp` remains limited to early StickS3 M5PM1 rail setup and NVS compatibility setup, while
+- The corrected ownership is: `variant.cpp` remains limited to early StickS3 M5PM1 rail setup, while
   `src/platform/extra_variants/m5stack_sticks3_dx_lr30_900m22sp_pin_header.cpp` owns the late M5PM1 `PowerStatus` thread where
   normal firmware source dependencies are available.
+
+## Operator boot log 2026-06-09 follow-up
+
+- The reported early boot error occurs during this variant's early M5PM1 rail setup, before the shared firmware later starts
+  the normal internal I2C bus on StickS3 GPIO47/GPIO48.
+- StickS3 hardware evidence identifies internal I2C as GPIO47/GPIO48 and the M5PM1-managed L3B rail as the supply for the LCD
+  backlight/MIC/speaker domain. The variant therefore still needs an early M5PM1 transaction, but it now resets the Arduino
+  `Wire` state, waits longer after `Wire.begin()`, and uses a shorter retry delay between attempts before handing the bus back
+  to shared firmware initialization.
+- The early variant init no longer writes the `firmwareVersion` preference. Shared ESP32 setup owns that NVS metadata later in
+  boot, and keeping early init limited to M5PM1 rail setup avoids pre-populating setup/provisioning state before the default
+  LoRa config can present the unset-region onboarding flow.
+- This screen-equipped variant must not compile out the unset-region welcome picker. `DISABLE_WELCOME_UNSET` is undef'd in the
+  variant header so a first boot with `config.lora.region == UNSET` continues to show the Meshtastic onboarding/region picker.

@@ -11,6 +11,10 @@ const char *getRadioInitFailureMessage();
 
 #define USE_ST7789
 
+#ifdef DISABLE_WELCOME_UNSET
+#undef DISABLE_WELCOME_UNSET
+#endif
+
 #define ST7789_NSS 41
 #define ST7789_RS 45
 #define ST7789_SDA 39
