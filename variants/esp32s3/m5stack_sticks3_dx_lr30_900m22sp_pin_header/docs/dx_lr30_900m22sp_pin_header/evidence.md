@@ -39,6 +39,7 @@ Evidence:
 - The operator-supplied purchase image identifies the target as the DX-LR30-900M22SP Pin Header / 插针款 SX1262 board hardware.
 - The vendor product page lists SX1262 and SPI as the hardware interface.
 - The vendor manual says DX-LR30-900M22S is pure RF hardware that must be driven by an MCU or SPI debug tool.
+- The vendor manual lists SPI communication as 0-10 Mbps, which covers Meshtastic's shared 4 MHz SX126x SPI rate.
 - The vendor manual external-port table exposes VCC, GND, NSS, NRST, MOSI, SCK, DIO1, MISO, DIO2, BUSY, RXEN, and TXEN.
 - The AD schematic symbol for LR20/30 has direct pins for DIO3, RXEN, TXEN, DIO2, VCC, DIO1, BUSY, RST, MISO, MOSI, SCK, and NSS.
 
@@ -50,18 +51,19 @@ Allowed values:
 - CARRIER_VCC_5V_INPUT_WITH_ONBOARD_REGULATOR_BUT_IO_3V3_ONLY
 - UNUSABLE_OR_UNRESOLVED_STOP
 
-DXLR30_VCC_DECISION: CARRIER_VCC_5V_INPUT_WITH_ONBOARD_REGULATOR_BUT_IO_3V3_ONLY
+DXLR30_VCC_DECISION: RADIO_VCC_3V3_ONLY
 DXLR30_IO_LEVEL_DECISION: 3V3_ONLY
-DXLR30_POWER_SOURCE_FOR_BRINGUP: EXTERNAL_5V_LIMITED_SUPPLY
+DXLR30_POWER_SOURCE_FOR_BRINGUP: STICKS3_3V3_L2_HAT2_PIN_13
+DXLR30_POWER_ENABLE_FOR_BRINGUP: M5PM1_PWR_CFG_DCDC3V3_EN
 
 Power evidence:
-- The operator-supplied pin-header board image lists the DX-LR30-900M22SP Pin Header / 插针款 working voltage as 5V.
 - The vendor DX-LR30-900M22S manual lists VBAT recommended operating range as 1.8V to 3.7V, typical 3.3V.
-- The vendor manual warns that 5V communication lines require series resistance and are still not recommended because of damage risk.
-- The firmware variant must not enable M5Stack StickS3 external 5V output by default.
+- The vendor manual lists communication level as 3.3V and warns that 5V TTL has module-damage risk.
+- The StickS3 Hat2 bus exposes 3V3_L2 on pin 13 for the radio VCC connection; firmware must enable M5PM1 `DCDC_EN` / StickS3 `DCDC3V3_EN_PP` for that rail and must not enable M5Stack StickS3 external 5V output for this carrier.
+- The StickS3 Hat2 EXT_5V, 5V_IN, and BAT pins are not valid DX VCC sources for this target.
 
 Bench limits for first power-on:
-- Current limit: 150 mA pending bench confirmation
+- Power rail: StickS3 3V3_L2, enabled by M5PM1 PWR_CFG DCDC_EN / StickS3 DCDC3V3_EN_PP
 - Antenna attached before TX: YES_REQUIRED
 - Default firmware may enable M5Stack StickS3 EXT_5V: NO
 
@@ -73,30 +75,33 @@ Allowed values:
 - UNRESOLVED_STOP
 
 DXLR30_RF_SWITCH_DECISION: EXPLICIT_RXEN_TXEN_FROM_HOST
-DXLR30_RF_SWITCH_EVIDENCE: The vendor manual external-port table exposes RXEN as receive switch control and TXEN as transmit switch control; DIO2 is documented separately as a multi-purpose IO/RF-band switch-control pin.
+DXLR30_RF_SWITCH_EVIDENCE: The vendor manual external-port table exposes RXEN as receive switch control and TXEN as transmit switch control; DIO2 is documented separately as a multi-purpose IO/RF-band switch-control pin that may be left floating when unused.
 DXLR30_TCXO_DECISION: XTAL_ONLY
+DXLR30_RF_MAX_POWER_DBM: 22
+DXLR30_SPI_MAX_MBPS: 10
 
 ## Proposed M5Stack StickS3 HAT2 mapping
 
-This mapping requires 3.3V-safe GPIO signaling and an external verified radio supply. Do not power the radio from M5Stack StickS3 EXT_5V unless a later hardware validation phase proves that path safe.
+This mapping requires 3.3V-safe GPIO signaling and powers the radio from the StickS3 3V3_L2 rail. Do not power the radio from M5Stack StickS3 EXT_5V.
 
-| DX-LR30-900M22SP Pin Header / 插针款 signal | M5Stack StickS3 GPIO | Status |
-|---|---:|---|
-| NSS | GPIO5 | SELECTED |
-| NRST | GPIO4 | SELECTED |
-| SCK | GPIO6 | SELECTED |
-| DIO1 | GPIO1 | SELECTED |
-| MOSI | GPIO7 | SELECTED |
-| MISO | GPIO8 | SELECTED |
-| BUSY | GPIO2 | SELECTED |
-| RXEN | GPIO43 | SELECTED |
-| TXEN | GPIO44 | SELECTED |
-| DIO2 | NC | EXPLICIT_RXEN_TXEN_MODE |
-| VCC | external verified supply | SELECTED |
-| GND | GND | SELECTED |
+| DX pin | DX-LR30-900M22SP Pin Header / 插针款 signal | StickS3 Hat2 pin | StickS3 signal | Status |
+|---:|---|---:|---|---|
+| 1 | VCC | 13 | 3V3_L2 | SELECTED |
+| 2 | GND | 1 | GND | SELECTED |
+| 3 | NSS | 2 | GPIO5 | SELECTED |
+| 4 | NRST | 4 | GPIO4 | SELECTED |
+| 5 | MOSI | 8 | GPIO7 | SELECTED |
+| 6 | SCK | 6 | GPIO6 | SELECTED |
+| 7 | DIO1 | 7 | GPIO1 | SELECTED |
+| 8 | MISO | 9 | GPIO8 | SELECTED |
+| 9 | DIO2 | NC | NC | EXPLICIT_RXEN_TXEN_MODE |
+| 10 | BUSY | 14 | GPIO2 | SELECTED |
+| 11 | RXEN | 10 | GPIO43 | SELECTED |
+| 12 | TXEN | 12 | GPIO44 | SELECTED |
 
 ## Stop conditions
 
+- If DX VCC is connected to EXT_5V, 5V_IN, or BAT, stop and move it to StickS3 Hat2 pin 13 (`3V3_L2`).
 - If GPIO signaling is exposed to 5V logic, stop and add level shifting before connecting M5Stack StickS3 GPIOs.
 - If `DXLR30_RF_SWITCH_DECISION` changes to `UNRESOLVED_STOP`, stop before radio TX/RX tests.
 - If the display is not readable with the radio disconnected, stop before radio wiring.

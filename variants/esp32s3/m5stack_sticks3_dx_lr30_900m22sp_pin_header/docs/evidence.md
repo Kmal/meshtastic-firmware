@@ -7,6 +7,7 @@ M5STACK_STICKS3_HARDWARE_EVIDENCE: variants/esp32s3/m5stack_sticks3_dx_lr30_900m
 DXLR30_HARDWARE_EVIDENCE: variants/esp32s3/m5stack_sticks3_dx_lr30_900m22sp_pin_header/docs/dx_lr30_900m22sp_pin_header/evidence.md
 DISPLAY_VALIDATION_DOC: variants/esp32s3/m5stack_sticks3_dx_lr30_900m22sp_pin_header/docs/display_validation.md
 RADIO_SPI_VALIDATION_DOC: variants/esp32s3/m5stack_sticks3_dx_lr30_900m22sp_pin_header/docs/radio_spi_validation.md
+HARDWARE_SPEC_AUDIT_DOC: variants/esp32s3/m5stack_sticks3_dx_lr30_900m22sp_pin_header/docs/hardware_spec_audit.md
 MESH_VALIDATION_DOC: variants/esp32s3/m5stack_sticks3_dx_lr30_900m22sp_pin_header/docs/mesh_validation.md
 
 ## Firmware-port decisions
@@ -18,11 +19,21 @@ TARGET_HAS_STM32: NO
 DISPLAY_DRIVER_DECISION: ST7789_DRIVER_REUSE_ONLY_NOT_PINMAP_REUSE
 RADIO_DRIVER_DECISION: SX1262_DIRECT_SPI
 RADIO_RF_SWITCH_DRIVER_DECISION: SX126X_RXEN_TXEN_HOST_CONTROL
-FIRMWARE_POWER_POLICY: DO_NOT_ENABLE_STICKS3_EXT_5V_BY_DEFAULT
+FIRMWARE_POWER_POLICY: RADIO_VCC_FROM_STICKS3_3V3_L2_DO_NOT_ENABLE_EXT_5V
 
 Do not shorten this firmware target to `DX-LR30-900M22SP`. This variant is for the
 `DX-LR30-900M22SP Pin Header / 插针款` hardware identity only. The target has no
 STM32; M5Stack StickS3 controls the SX1262 over SPI.
+
+
+## Hardware spec audit 2026-06-10
+
+- Current code and docs were re-checked against the StickS3 product documentation, StickS3 schematic, SZDX DX-LR30 vendor manual, and Semtech SX1262 datasheet.
+- Corrected invariant: DX VCC is StickS3 Hat2 pin 13 (`3V3_L2`) only, and early init must set M5PM1 `PWR_CFG` bit 1 (`DCDC_EN`) so that rail is enabled. StickS3 Hat2 `EXT_5V`, `5V_IN`, and `BAT` are not valid DX VCC sources for this target.
+- Corrected invariant: all DX digital lines are 3.3 V logic. The SZDX manual explicitly warns that 5 V TTL has damage risk.
+- Corrected invariant: DX Pin Header pin 9 (`DIO2`) stays unconnected in this wiring because the Pin Header exposes separate `RXEN` and `TXEN` controls.
+- Corrected invariant: the module uses a 32 MHz non-TCXO crystal, so firmware must not define `SX126X_DIO3_TCXO_VOLTAGE`.
+- Corrected code invariant: early init enables the M5PM1 `DCDC_EN` bit that drives StickS3 `DCDC3V3_EN_PP` for `3V3_L2`, and `SX126X_MAX_POWER` is explicitly set to 22 dBm, matching the DX-LR30-900M22S maximum transmit-power spec.
 
 ## CI failure 27139716800 root cause
 
@@ -74,10 +85,10 @@ STM32; M5Stack StickS3 controls the SX1262 over SPI.
 
 - The reported early boot error occurs during this variant's early M5PM1 rail setup, before the shared firmware later starts
   the normal internal I2C bus on StickS3 GPIO47/GPIO48.
-- StickS3 hardware evidence identifies internal I2C as GPIO47/GPIO48 and the M5PM1-managed L3B rail as the supply for the LCD
-  backlight/MIC/speaker domain. The variant therefore still needs an early M5PM1 transaction, but it now resets the Arduino
-  `Wire` state, waits longer after `Wire.begin()`, and uses a shorter retry delay between attempts before handing the bus back
-  to shared firmware initialization.
+- StickS3 hardware evidence identifies internal I2C as GPIO47/GPIO48, M5PM1 `DCDC_EN` / StickS3 `DCDC3V3_EN_PP` as the 3V3_L2/Hat2 radio-power enable,
+  and M5PM1 PYG2 as the L3B backlight/MIC/speaker enable. The variant therefore still needs an early M5PM1 transaction, but
+  it now resets the Arduino `Wire` state, waits longer after `Wire.begin()`, and uses a shorter retry delay between attempts
+  before handing the bus back to shared firmware initialization.
 - The early variant init no longer writes the `firmwareVersion` preference. Shared ESP32 setup owns that NVS metadata later in
   boot, and keeping early init limited to M5PM1 rail setup avoids pre-populating setup/provisioning state before the default
   LoRa config can present the unset-region onboarding flow.
