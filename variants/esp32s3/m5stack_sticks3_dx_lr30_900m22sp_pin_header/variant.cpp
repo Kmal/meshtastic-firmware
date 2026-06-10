@@ -1,12 +1,7 @@
 #include "variant.h"
 
 #include <Arduino.h>
-#include <Preferences.h>
 #include <Wire.h>
-
-#define MESH_XSTR(s) MESH_YSTR(s)
-#define MESH_YSTR(s) #s
-#define MESH_OPTSTR(s) (MESH_XSTR(s)[0] ? MESH_XSTR(s) : "unset")
 
 #ifdef M5STACK_STICKS3_DX_LR30_900M22SP_PIN_HEADER
 namespace
@@ -20,7 +15,8 @@ constexpr uint8_t M5PM1_GPIO_FUNC0 = 0x16;
 constexpr uint8_t M5PM1_PYG2_L3B_EN_BIT = 1 << 2;
 constexpr uint8_t M5PM1_PYG2_L3B_EN_FUNC_MASK = 0b11 << 4;
 constexpr uint8_t M5PM1_SETUP_ATTEMPTS = 3;
-constexpr uint8_t M5PM1_I2C_SETTLE_MS = 10;
+constexpr uint8_t M5PM1_I2C_SETTLE_MS = 50;
+constexpr uint8_t M5PM1_I2C_RETRY_MS = 20;
 constexpr uint8_t M5PM1_RAIL_SETTLE_MS = 20;
 
 bool pm1Read(uint8_t reg, uint8_t &val)
@@ -63,6 +59,9 @@ bool configureInternalPeripheralPower()
 
 void enableInternalPeripheralPower()
 {
+    Wire.end();
+    delay(M5PM1_I2C_RETRY_MS);
+
     for (uint8_t attempt = 0; attempt < M5PM1_SETUP_ATTEMPTS; attempt++) {
         Wire.begin(I2C_SDA, I2C_SCL);
         delay(M5PM1_I2C_SETTLE_MS);
@@ -72,7 +71,7 @@ void enableInternalPeripheralPower()
             return;
         }
         Wire.end();
-        delay(M5PM1_I2C_SETTLE_MS);
+        delay(M5PM1_I2C_RETRY_MS);
     }
 }
 
@@ -81,12 +80,6 @@ void enableInternalPeripheralPower()
 void earlyInitVariant()
 {
     enableInternalPeripheralPower();
-
-    Preferences preferences;
-    preferences.begin("meshtastic", false);
-    if (!preferences.isKey("firmwareVersion"))
-        preferences.putString("firmwareVersion", MESH_OPTSTR(APP_VERSION));
-    preferences.end();
 }
 
 #endif
