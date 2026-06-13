@@ -106,8 +106,8 @@ static inline const char *criticalErrorLabel(uint32_t code)
 #define SX126X_BUSY LORA_BUSY
 #define SX126X_RESET LORA_RESET
 
-#define LORA_RXEN 43
-#define LORA_TXEN 44
+#define LORA_RXEN 44
+#define LORA_TXEN 3
 #define SX126X_RXEN LORA_RXEN
 #define SX126X_TXEN LORA_TXEN
 

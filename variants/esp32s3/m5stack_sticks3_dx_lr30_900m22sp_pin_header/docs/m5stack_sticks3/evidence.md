@@ -40,8 +40,8 @@
 | Buttons | KEY1=GPIO11, KEY2=GPIO12 |
 | IR | TX=GPIO46, RX=GPIO42 |
 | Audio pins | GPIO18, GPIO14, GPIO17, GPIO15, GPIO16, GPIO48, GPIO47 |
-| HAT2 available GPIO pins | GPIO5, GPIO4, GPIO6, GPIO1, GPIO7, GPIO8, GPIO43, GPIO44, GPIO2, GPIO3 |
-| HAT2 excluded pins for radio wiring | Boot, EXT_5V, BAT, 5V_IN |
+| HAT2 available GPIO pins | GPIO5, GPIO4, GPIO0/Boot, GPIO6, GPIO1, GPIO7, GPIO8, GPIO43, GPIO44, GPIO2, GPIO3 |
+| HAT2 excluded pins for radio VCC | EXT_5V, BAT, 5V_IN |
 | HAT2 radio power rail | 3V3_L2 on Hat2 pin 13 |
 | M5PM1 3V3_L2 control | PWR_CFG register 0x06 bit 1 DCDC_EN drives StickS3 DCDC3V3_EN_PP for the 3V3_L2 rail |
 | EXT_5V policy | Default input mode; do not enable output for this radio carrier |
@@ -59,18 +59,18 @@
 | 2 | GPIO5 | DX NSS |
 | 3 | EXT_5V | Not used |
 | 4 | GPIO4 | DX NRST |
-| 5 | Boot | Not used |
+| 5 | Boot / GPIO0 | Not used |
 | 6 | GPIO6 | DX SCK |
 | 7 | GPIO1 | DX DIO1 |
 | 8 | GPIO7 | DX MOSI |
 | 9 | GPIO8 | DX MISO |
-| 10 | GPIO43 | DX RXEN |
+| 10 | GPIO43 | Debug UART TX, not used for radio |
 | 11 | BAT | Not used |
-| 12 | GPIO44 | DX TXEN |
+| 12 | GPIO44 | DX RXEN; debug UART RX not used |
 | 13 | 3V3_L2 | DX VCC |
 | 14 | GPIO2 | DX BUSY |
 | 15 | 5V_IN | Not used |
-| 16 | GPIO3 | Spare, not used |
+| 16 | GPIO3 | DX TXEN |
 
 The StickS3 documentation says `EXT_5V` defaults to input mode and can be
 configured as 5 V output. This variant must keep `EXT_5V` unused for the
