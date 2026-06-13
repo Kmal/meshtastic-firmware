@@ -19,8 +19,8 @@ Continuity check:
 - DX pin 8 MISO -> StickS3 Hat2 pin 9 GPIO8: NOT_REPORTED
 - DX pin 9 DIO2 -> NC: NOT_REPORTED
 - DX pin 10 BUSY -> StickS3 Hat2 pin 14 GPIO2: NOT_REPORTED
-- DX pin 11 RXEN -> StickS3 Hat2 pin 10 GPIO43: NOT_REPORTED
-- DX pin 12 TXEN -> StickS3 Hat2 pin 12 GPIO44: NOT_REPORTED
+- DX pin 11 RXEN -> StickS3 Hat2 pin 12 GPIO44: NOT_REPORTED
+- DX pin 12 TXEN -> StickS3 Hat2 pin 16 GPIO3: NOT_REPORTED
 - No DX VCC connection to EXT_5V, 5V_IN, or BAT: NOT_REPORTED
 - No GPIO exposed to 5 V logic: NOT_REPORTED
 

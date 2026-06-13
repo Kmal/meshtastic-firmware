@@ -96,8 +96,13 @@ This mapping requires 3.3V-safe GPIO signaling and powers the radio from the Sti
 | 8 | MISO | 9 | GPIO8 | SELECTED |
 | 9 | DIO2 | NC | NC | EXPLICIT_RXEN_TXEN_MODE |
 | 10 | BUSY | 14 | GPIO2 | SELECTED |
-| 11 | RXEN | 10 | GPIO43 | SELECTED |
-| 12 | TXEN | 12 | GPIO44 | SELECTED |
+| 11 | RXEN | 12 | GPIO44 | SELECTED_UART_TX_ONLY_DEBUG |
+| 12 | TXEN | 16 | GPIO3 | SELECTED_DEBUG_UART_FREE |
+
+Routing rationale: debug logging only needs the ESP32-S3 UART TX line, so keep
+Hat2 pin 10 (`GPIO43`) free and use Hat2 pin 12 (`GPIO44`) for DX `RXEN` instead
+of the boot strap on Hat2 pin 5 (`GPIO0`). Keep DX `TXEN` on Hat2 pin 16
+(`GPIO3`) so the RF-switch jumpers stay on the same end of the Hat2 connector.
 
 ## Stop conditions
 

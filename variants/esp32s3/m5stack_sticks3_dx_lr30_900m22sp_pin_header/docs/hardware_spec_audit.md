@@ -41,11 +41,17 @@ older comments or bring-up notes as stale when they conflict with this file.
 | 8 | MISO | 9 | `GPIO8` | `LORA_MISO` |
 | 9 | DIO2 | NC | NC | `LORA_DIO2=RADIOLIB_NC` |
 | 10 | BUSY | 14 | `GPIO2` | `LORA_BUSY` / `SX126X_BUSY` |
-| 11 | RXEN | 10 | `GPIO43` | `SX126X_RXEN` |
-| 12 | TXEN | 12 | `GPIO44` | `SX126X_TXEN` |
+| 11 | RXEN | 12 | `GPIO44` | `SX126X_RXEN` |
+| 12 | TXEN | 16 | `GPIO3` | `SX126X_TXEN` |
+
+Jumper routing note: use DX pin 11 (`RXEN`) to Hat2 pin 12 (`GPIO44`) and DX
+pin 12 (`TXEN`) to Hat2 pin 16 (`GPIO3`). This avoids using the Hat2 boot strap
+pin 5 (`GPIO0`) and keeps Hat2 pin 10 (`GPIO43`) free for debug UART TX output.
 
 Do not use StickS3 Hat2 pin 3 (`EXT_5V`), pin 11 (`BAT`), or pin 15 (`5V_IN`)
-for DX VCC. Do not use Hat2 pin 5 (`Boot`) for radio wiring.
+for DX VCC. Hat2 pin 5 (`Boot` / `GPIO0`) is not used for radio wiring. GPIO43
+remains available for ESP32-S3 debug UART TX output; debug UART RX on GPIO44 is
+not needed for log capture.
 
 ## Validation checklist before RF transmit
 
