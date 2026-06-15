@@ -158,6 +158,7 @@ void lateInitVariant()
     selectConfig.activePullup = true;
     selectConfig.intRoutine = selectButtonInterrupt;
     selectConfig.singlePress = INPUT_BROKER_SELECT;
+    selectConfig.longPress = INPUT_BROKER_SELECT_LONG;
     selectButtonThread->initButton(selectConfig);
     selectButtonThread->userButton.setDebounceMs(STICKS3_BUTTON_DEBOUNCE_MS);
 
