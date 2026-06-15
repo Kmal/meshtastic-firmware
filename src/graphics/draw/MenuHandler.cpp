@@ -2144,7 +2144,7 @@ void menuHandler::BrightnessPickerMenu()
 
         if (selected != 0) { // Not "Back"
                              // Apply brightness immediately
-#if (defined(HELTEC_MESH_NODE_T114) || defined(HELTEC_VISION_MASTER_T190)) && !defined(VTFT_LEDA_BINARY)
+#if defined(HELTEC_MESH_NODE_T114) || defined(HELTEC_VISION_MASTER_T190)
             // For HELTEC devices, use analogWrite to control backlight
             analogWrite(VTFT_LEDA, uiconfig.screen_brightness);
 #elif defined(ST7789_CS) || defined(ST7796_CS)

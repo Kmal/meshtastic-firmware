@@ -629,7 +629,7 @@ void Screen::handleSetOn(bool on, FrameCallback einkScreensaver)
 #endif
 #if defined(USE_ST7789) && defined(VTFT_LEDA)
             ui->init();
-#if defined(ESP_PLATFORM) && !defined(VTFT_LEDA_BINARY)
+#ifdef ESP_PLATFORM
             analogWrite(VTFT_LEDA, BRIGHTNESS_DEFAULT);
 #else
             pinMode(VTFT_LEDA, OUTPUT);
@@ -638,7 +638,7 @@ void Screen::handleSetOn(bool on, FrameCallback einkScreensaver)
 #endif
 #ifdef USE_ST7796
             ui->init();
-#if defined(ESP_PLATFORM) && !defined(VTFT_LEDA_BINARY)
+#ifdef ESP_PLATFORM
             analogWrite(VTFT_LEDA, BRIGHTNESS_DEFAULT);
 #else
             pinMode(VTFT_LEDA, OUTPUT);
