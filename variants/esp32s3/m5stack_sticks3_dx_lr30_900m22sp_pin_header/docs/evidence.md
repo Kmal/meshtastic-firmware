@@ -94,3 +94,14 @@ STM32; M5Stack StickS3 controls the SX1262 over SPI.
   LoRa config can present the unset-region onboarding flow.
 - This screen-equipped variant must not compile out the unset-region welcome picker. `DISABLE_WELCOME_UNSET` is undef'd in the
   variant header so a first boot with `config.lora.region == UNSET` continues to show the Meshtastic onboarding/region picker.
+
+## Maintenance ownership
+
+- `HAS_CUSTOM_POWER_STATUS` requires the shared conditional in `src/PowerStatus.h` because this variant publishes through the common
+  `meshtastic::PowerStatus` API.
+- `MESHTASTIC_CRITICAL_FAULT_LABEL` is intentionally consumed by `src/graphics/draw/NotificationRenderer.cpp`; the board-specific
+  label mapping remains in `variant.h`.
+- Radio initialization diagnostics must remain in `src/mesh/RadioInterface.cpp` and `src/mesh/SX126xInterface.cpp`, whose components
+  own the probe lifecycle and RadioLib status codes.
+- Do not fork or shadow `src/mesh/RadioInterface.cpp`, `src/mesh/SX126xInterface.cpp`, or `NotificationRenderer.cpp` for this board
+  through PlatformIO source filters.
